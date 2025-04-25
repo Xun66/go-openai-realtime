@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	openairt "github.com/WqyJh/go-openai-realtime"
-	test "github.com/WqyJh/go-openai-realtime/test"
+	openairt "github.com/Xun66/go-openai-realtime"
+	test "github.com/Xun66/go-openai-realtime/test"
 	"github.com/coder/websocket"
 	"github.com/stretchr/testify/require"
 )
