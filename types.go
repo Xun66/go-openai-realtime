@@ -12,6 +12,9 @@ const (
 	VoiceBallad  Voice = "ballad"
 	VoiceCoral   Voice = "coral"
 	VoiceEcho    Voice = "echo"
+	VoiceFable   Voice = "fable"
+	VoiceNova    Voice = "nova"
+	VoiceOnyx    Voice = "onyx"
 	VoiceSage    Voice = "sage"
 	VoiceShimmer Voice = "shimmer"
 	VoiceVerse   Voice = "verse"
@@ -35,14 +38,16 @@ const (
 type ClientTurnDetectionType string
 
 const (
-	ClientTurnDetectionTypeServerVad ClientTurnDetectionType = "server_vad"
+	ClientTurnDetectionTypeServerVad   ClientTurnDetectionType = "server_vad"
+	ClientTurnDetectionTypeSemanticVad ClientTurnDetectionType = "semantic_vad"
 )
 
 type ServerTurnDetectionType string
 
 const (
-	ServerTurnDetectionTypeNone      ServerTurnDetectionType = "none"
-	ServerTurnDetectionTypeServerVad ServerTurnDetectionType = "server_vad"
+	ServerTurnDetectionTypeNone        ServerTurnDetectionType = "none"
+	ServerTurnDetectionTypeServerVad   ServerTurnDetectionType = "server_vad"
+	ServerTurnDetectionTypeSemanticVad ServerTurnDetectionType = "semantic_vad"
 )
 
 type TurnDetectionType string
@@ -55,28 +60,45 @@ const (
 	// TurnDetectionTypeServerVad use server-side VAD to detect turn.
 	// This is default value for newly created session.
 	TurnDetectionTypeServerVad TurnDetectionType = "server_vad"
+	// TurnDetectionTypeSemanticVad use semantic VAD to detect turn.
+	TurnDetectionTypeSemanticVad TurnDetectionType = "semantic_vad"
+)
+
+type TurnDetectionEagerness string
+
+const (
+	TurnDetectionEagernessAuto   TurnDetectionEagerness = "auto"
+	TurnDetectionEagernessLow    TurnDetectionEagerness = "low"
+	TurnDetectionEagernessMedium TurnDetectionEagerness = "medium"
+	TurnDetectionEagernessHigh   TurnDetectionEagerness = "high"
 )
 
 type TurnDetectionParams struct {
-	// Activation threshold for VAD.
+	// The eagerness of the model to respond. Used only for SemanticVad mode.
+	Eagerness TurnDetectionEagerness `json:"eagerness,omitempty"`
+
+	// Activation threshold for VAD. Used only for ServerVad mode.
 	Threshold float64 `json:"threshold,omitempty"`
-	// Audio included before speech starts (in milliseconds).
+	// Audio included before speech starts (in milliseconds). Used only for ServerVad mode.
 	PrefixPaddingMs int `json:"prefix_padding_ms,omitempty"`
-	// Duration of silence to detect speech stop (in milliseconds).
+	// Duration of silence to detect speech stop (in milliseconds). Used only for ServerVad mode.
 	SilenceDurationMs int `json:"silence_duration_ms,omitempty"`
+
+	// Whether or not to automatically interrupt any ongoing response with output to the default conversation when a VAD start event occurs.
+	InterruptResponse *bool `json:"interrupt_response,omitempty"`
 	// Whether or not to automatically generate a response when VAD is enabled. true by default.
 	CreateResponse *bool `json:"create_response,omitempty"`
 }
 
 type ClientTurnDetection struct {
-	// Type of turn detection, only "server_vad" is currently supported.
+	// Type of turn detection, only "server_vad" or "semantic_vad" is currently supported.
 	Type ClientTurnDetectionType `json:"type"`
 
 	TurnDetectionParams
 }
 
 type ServerTurnDetection struct {
-	// The type of turn detection ("server_vad" or "none").
+	// The type of turn detection ("server_vad" or "semantic_vad").
 	Type ServerTurnDetectionType `json:"type"`
 
 	TurnDetectionParams
@@ -124,6 +146,10 @@ const (
 type InputAudioTranscription struct {
 	// The model used for transcription.
 	Model string `json:"model"`
+	// The prompt to use for transcription.
+	Prompt string `json:"prompt,omitempty"`
+	// The language of the audio.
+	Language string `json:"language,omitempty"`
 }
 
 type Tool struct {
