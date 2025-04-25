@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	openairt "github.com/WqyJh/go-openai-realtime"
+	openairt "github.com/Xun66/go-openai-realtime"
 )
 
 func main() {

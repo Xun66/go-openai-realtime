@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	openairt "github.com/WqyJh/go-openai-realtime"
 	"github.com/WqyJh/jsontools"
+	openairt "github.com/Xun66/go-openai-realtime"
 	"github.com/sashabaranov/go-openai"
 	"github.com/stretchr/testify/require"
 )

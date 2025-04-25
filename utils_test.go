@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	openairt "github.com/WqyJh/go-openai-realtime"
+	openairt "github.com/Xun66/go-openai-realtime"
 	"github.com/stretchr/testify/require"
 )
 
