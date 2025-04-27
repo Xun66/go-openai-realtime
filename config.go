@@ -28,6 +28,7 @@ const (
 // ClientConfig is the configuration for the client.
 type ClientConfig struct {
 	authToken string
+	intent    string
 
 	BaseURL    string  // Base URL for the API. Defaults to "wss://api.openai.com/v1/realtime"
 	APIBaseURL string  // Base URL for the API. Defaults to "https://api.openai.com/v1"
@@ -36,9 +37,9 @@ type ClientConfig struct {
 	HTTPClient *http.Client
 }
 
-// DefaultConfig creates a new ClientConfig with the given auth token.
+// DefaultRealtimeConfig creates a new ClientConfig with the given auth token.
 // Defaults to using the OpenAI Realtime API.
-func DefaultConfig(authToken string) ClientConfig {
+func DefaultRealtimeConfig(authToken string) ClientConfig {
 	return ClientConfig{
 		authToken:  authToken,
 		BaseURL:    OpenaiRealtimeAPIURLv1,
@@ -48,11 +49,36 @@ func DefaultConfig(authToken string) ClientConfig {
 	}
 }
 
-// DefaultAzureConfig creates a new ClientConfig with the given auth token and base URL.
+// DefaultRealtimeAzureConfig creates a new ClientConfig with the given auth token and base URL.
 // Defaults to using the Azure Realtime API.
-func DefaultAzureConfig(apiKey, baseURL string) ClientConfig {
+func DefaultRealtimeAzureConfig(apiKey, baseURL string) ClientConfig {
 	return ClientConfig{
 		authToken:  apiKey,
+		BaseURL:    baseURL,
+		APIType:    APITypeAzure,
+		APIVersion: azureAPIVersion20241001Preview,
+		HTTPClient: &http.Client{},
+	}
+}
+
+func DefaultTranscriptionConfig(authToken string) ClientConfig {
+	return ClientConfig{
+		authToken:  authToken,
+		intent:     "transcription",
+		BaseURL:    OpenaiRealtimeAPIURLv1,
+		APIBaseURL: OpenaiAPIURLv1,
+		APIType:    APITypeOpenAI,
+		HTTPClient: &http.Client{},
+	}
+}
+
+// DefaultTranscriptionAzureConfig
+// Didn't find information about how to use transcription with Azure.
+// See https://learn.microsoft.com/en-us/azure/ai-services/openai/realtime-audio-reference
+func DefaultTranscriptionAzureConfig(apiKey, baseURL string) ClientConfig {
+	return ClientConfig{
+		authToken:  apiKey,
+		intent:     "transcription",
 		BaseURL:    baseURL,
 		APIType:    APITypeAzure,
 		APIVersion: azureAPIVersion20241001Preview,

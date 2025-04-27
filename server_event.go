@@ -11,6 +11,8 @@ const (
 	ServerEventTypeError                                            ServerEventType = "error"
 	ServerEventTypeSessionCreated                                   ServerEventType = "session.created"
 	ServerEventTypeSessionUpdated                                   ServerEventType = "session.updated"
+	ServerEventTypeTranscriptionSessionCreated                      ServerEventType = "transcription_session.created"
+	ServerEventTypeTranscriptionSessionUpdated                      ServerEventType = "transcription_session.updated"
 	ServerEventTypeConversationCreated                              ServerEventType = "conversation.created"
 	ServerEventTypeInputAudioBufferCommitted                        ServerEventType = "input_audio_buffer.committed"
 	ServerEventTypeInputAudioBufferCleared                          ServerEventType = "input_audio_buffer.cleared"
@@ -19,6 +21,7 @@ const (
 	ServerEventTypeConversationItemCreated                          ServerEventType = "conversation.item.created"
 	ServerEventTypeConversationItemInputAudioTranscriptionCompleted ServerEventType = "conversation.item.input_audio_transcription.completed"
 	ServerEventTypeConversationItemInputAudioTranscriptionFailed    ServerEventType = "conversation.item.input_audio_transcription.failed"
+	ServerEventTypeConversationItemInputAudioTranscriptionDelta     ServerEventType = "conversation.item.input_audio_transcription.delta"
 	ServerEventTypeConversationItemTruncated                        ServerEventType = "conversation.item.truncated"
 	ServerEventTypeConversationItemDeleted                          ServerEventType = "conversation.item.deleted"
 	ServerEventTypeResponseCreated                                  ServerEventType = "response.created"
@@ -82,6 +85,22 @@ type SessionUpdatedEvent struct {
 	Session ServerSession `json:"session"`
 }
 
+// TranscriptionSessionCreatedEvent is the event for transcription session created.
+// Returned when a transcription session is created.
+// See https://platform.openai.com/docs/api-reference/realtime-server-events/transcription_session/created
+type TranscriptionSessionCreatedEvent struct {
+	ServerEventBase
+	Session ServerSession `json:"session"`
+}
+
+// TranscriptionSessionUpdatedEvent is the event for transcription session updated.
+// Returned when a transcription session is updated.
+// See https://platform.openai.com/docs/api-reference/realtime-server-events/transcription_session/updated
+type TranscriptionSessionUpdatedEvent struct {
+	ServerEventBase
+	Session ServerSession `json:"session"`
+}
+
 // ConversationCreatedEvent is the event for conversation created.
 // Returned when a conversation is created. Emitted right after session creation.
 // See https://platform.openai.com/docs/api-reference/realtime-server-events/conversation/created
@@ -135,6 +154,13 @@ type ConversationItemCreatedEvent struct {
 	ServerEventBase
 	PreviousItemID string              `json:"previous_item_id,omitempty"`
 	Item           ResponseMessageItem `json:"item"`
+}
+
+type ConversationItemInputAudioTranscriptionDeltaEvent struct {
+	ServerEventBase
+	ItemID       string `json:"item_id"`
+	ContentIndex int    `json:"content_index"`
+	Delta        string `json:"delta"`
 }
 
 type ConversationItemInputAudioTranscriptionCompletedEvent struct {
@@ -375,12 +401,15 @@ type ServerEventInterface interface {
 	ErrorEvent |
 		SessionCreatedEvent |
 		SessionUpdatedEvent |
+		TranscriptionSessionCreatedEvent |
+		TranscriptionSessionUpdatedEvent |
 		ConversationCreatedEvent |
 		InputAudioBufferCommittedEvent |
 		InputAudioBufferClearedEvent |
 		InputAudioBufferSpeechStartedEvent |
 		InputAudioBufferSpeechStoppedEvent |
 		ConversationItemCreatedEvent |
+		ConversationItemInputAudioTranscriptionDeltaEvent |
 		ConversationItemInputAudioTranscriptionCompletedEvent |
 		ConversationItemInputAudioTranscriptionFailedEvent |
 		ConversationItemTruncatedEvent |
@@ -427,6 +456,10 @@ func UnmarshalServerEvent(data []byte) (ServerEvent, error) { //nolint:funlen,cy
 		return unmarshalServerEvent[SessionCreatedEvent](data)
 	case ServerEventTypeSessionUpdated:
 		return unmarshalServerEvent[SessionUpdatedEvent](data)
+	case ServerEventTypeTranscriptionSessionCreated:
+		return unmarshalServerEvent[TranscriptionSessionCreatedEvent](data)
+	case ServerEventTypeTranscriptionSessionUpdated:
+		return unmarshalServerEvent[TranscriptionSessionUpdatedEvent](data)
 	case ServerEventTypeConversationCreated:
 		return unmarshalServerEvent[ConversationCreatedEvent](data)
 	case ServerEventTypeInputAudioBufferCommitted:
@@ -439,6 +472,8 @@ func UnmarshalServerEvent(data []byte) (ServerEvent, error) { //nolint:funlen,cy
 		return unmarshalServerEvent[InputAudioBufferSpeechStoppedEvent](data)
 	case ServerEventTypeConversationItemCreated:
 		return unmarshalServerEvent[ConversationItemCreatedEvent](data)
+	case ServerEventTypeConversationItemInputAudioTranscriptionDelta:
+		return unmarshalServerEvent[ConversationItemInputAudioTranscriptionDeltaEvent](data)
 	case ServerEventTypeConversationItemInputAudioTranscriptionCompleted:
 		return unmarshalServerEvent[ConversationItemInputAudioTranscriptionCompletedEvent](data)
 	case ServerEventTypeConversationItemInputAudioTranscriptionFailed:

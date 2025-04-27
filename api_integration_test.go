@@ -14,7 +14,7 @@ func TestCreateSession(t *testing.T) {
 	if key == "" {
 		t.Skip("OPENAI_API_KEY is not set")
 	}
-	client := openairt.NewClient(key)
+	client := openairt.NewRealtimeClient(key)
 	session, err := client.CreateSession(context.Background(), &openairt.CreateSessionRequest{
 		Model: openairt.GPT4oRealtimePreview20241217,
 		ClientSession: openairt.ClientSession{

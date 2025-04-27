@@ -6,15 +6,16 @@ import "encoding/json"
 type ClientEventType string
 
 const (
-	ClientEventTypeSessionUpdate            ClientEventType = "session.update"
-	ClientEventTypeInputAudioBufferAppend   ClientEventType = "input_audio_buffer.append"
-	ClientEventTypeInputAudioBufferCommit   ClientEventType = "input_audio_buffer.commit"
-	ClientEventTypeInputAudioBufferClear    ClientEventType = "input_audio_buffer.clear"
-	ClientEventTypeConversationItemCreate   ClientEventType = "conversation.item.create"
-	ClientEventTypeConversationItemTruncate ClientEventType = "conversation.item.truncate"
-	ClientEventTypeConversationItemDelete   ClientEventType = "conversation.item.delete"
-	ClientEventTypeResponseCreate           ClientEventType = "response.create"
-	ClientEventTypeResponseCancel           ClientEventType = "response.cancel"
+	ClientEventTypeSessionUpdate              ClientEventType = "session.update"
+	ClientEventTypeTranscriptionSessionUpdate ClientEventType = "transcription_session.update"
+	ClientEventTypeInputAudioBufferAppend     ClientEventType = "input_audio_buffer.append"
+	ClientEventTypeInputAudioBufferCommit     ClientEventType = "input_audio_buffer.commit"
+	ClientEventTypeInputAudioBufferClear      ClientEventType = "input_audio_buffer.clear"
+	ClientEventTypeConversationItemCreate     ClientEventType = "conversation.item.create"
+	ClientEventTypeConversationItemTruncate   ClientEventType = "conversation.item.truncate"
+	ClientEventTypeConversationItemDelete     ClientEventType = "conversation.item.delete"
+	ClientEventTypeResponseCreate             ClientEventType = "response.create"
+	ClientEventTypeResponseCancel             ClientEventType = "response.cancel"
 )
 
 // ClientEvent is the interface for client event.
@@ -41,6 +42,8 @@ type ClientSession struct {
 	OutputAudioFormat AudioFormat `json:"output_audio_format,omitempty"`
 	// Configuration for input audio transcription. Can be set to `nil` to turn off.
 	InputAudioTranscription *InputAudioTranscription `json:"input_audio_transcription,omitempty"`
+	// Configuration for input audio noise reduction. Can be set to `nil` to keep default.
+	InputAudioNoiseReduction *InputAudioNoiseReduction `json:"input_audio_noise_reduction,omitempty"`
 	// Configuration for turn detection. Can be set to `nil` to turn off.
 	TurnDetection *ClientTurnDetection `json:"turn_detection"`
 	// Tools (functions) available to the model.
@@ -51,6 +54,19 @@ type ClientSession struct {
 	Temperature *float32 `json:"temperature,omitempty"`
 	// Maximum number of output tokens for a single assistant response, inclusive of tool calls. Provide an integer between 1 and 4096 to limit output tokens, or "inf" for the maximum available tokens for a given model. Defaults to "inf".
 	MaxOutputTokens IntOrInf `json:"max_response_output_tokens,omitempty"`
+}
+
+type TranscriptionClientSession struct {
+	// The format of input audio. Options are "pcm16", "g711_ulaw", or "g711_alaw".
+	InputAudioFormat AudioFormat `json:"input_audio_format,omitempty"`
+	// Configuration for input audio noise reduction. Can be set to `nil` to keep default.
+	InputAudioNoiseReduction *InputAudioNoiseReduction `json:"input_audio_noise_reduction,omitempty"`
+	// Configuration for input audio transcription. Can be set to `nil` to turn off.
+	InputAudioTranscription *InputAudioTranscription `json:"input_audio_transcription,omitempty"`
+	// The set of modalities the model can respond with. To disable audio, set this to ["text"].
+	Modalities []Modality `json:"modalities,omitempty"`
+	// Configuration for turn detection. Can be set to `nil` to turn off.
+	TurnDetection *ClientTurnDetection `json:"turn_detection,omitempty"`
 }
 
 // SessionUpdateEvent is the event for session update.
@@ -74,6 +90,31 @@ func (m SessionUpdateEvent) MarshalJSON() ([]byte, error) {
 	}{
 		sessionUpdateEvent: (*sessionUpdateEvent)(&m),
 		Type:               m.ClientEventType(),
+	}
+	return json.Marshal(v)
+}
+
+// TranscriptionSessionUpdateEvent is the event for transcription session update.
+// Send this event to update the transcription session’s default configuration.
+// See https://platform.openai.com/docs/api-reference/realtime-client-events/transcription_session/update
+type TranscriptionSessionUpdateEvent struct {
+	EventBase
+	// Session configuration to update.
+	Session TranscriptionClientSession `json:"session"`
+}
+
+func (m TranscriptionSessionUpdateEvent) ClientEventType() ClientEventType {
+	return ClientEventTypeTranscriptionSessionUpdate
+}
+
+func (m TranscriptionSessionUpdateEvent) MarshalJSON() ([]byte, error) {
+	type transcriptionSessionUpdateEvent TranscriptionSessionUpdateEvent
+	v := struct {
+		*transcriptionSessionUpdateEvent
+		Type ClientEventType `json:"type"`
+	}{
+		transcriptionSessionUpdateEvent: (*transcriptionSessionUpdateEvent)(&m),
+		Type:                            m.ClientEventType(),
 	}
 	return json.Marshal(v)
 }

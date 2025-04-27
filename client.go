@@ -19,14 +19,27 @@ type Client struct {
 	config ClientConfig
 }
 
-// NewClient creates new OpenAI Realtime API client.
-func NewClient(authToken string) *Client {
-	config := DefaultConfig(authToken)
-	return NewClientWithConfig(config)
+// NewRealtimeClient creates new OpenAI Realtime API client.
+func NewRealtimeClient(authToken string) *Client {
+	config := DefaultRealtimeConfig(authToken)
+	return NewRealtimeClientWithConfig(config)
 }
 
-// NewClientWithConfig creates new OpenAI Realtime API client for specified config.
-func NewClientWithConfig(config ClientConfig) *Client {
+// NewRealtimeClientWithConfig creates new OpenAI Realtime API client for specified config.
+func NewRealtimeClientWithConfig(config ClientConfig) *Client {
+	return &Client{
+		config: config,
+	}
+}
+
+// NewTranscriptionClient creates new OpenAI Transcription API client.
+func NewTranscriptionClient(authToken string) *Client {
+	config := DefaultTranscriptionConfig(authToken)
+	return NewTranscriptionClientWithConfig(config)
+}
+
+// NewTranscriptionClientWithConfig creates new OpenAI Transcription API client for specified config.
+func NewTranscriptionClientWithConfig(config ClientConfig) *Client {
 	return &Client{
 		config: config,
 	}
@@ -38,8 +51,12 @@ func (c *Client) getURL(model string) string {
 	if c.config.APIType == APITypeAzure {
 		query.Set("api-version", c.config.APIVersion)
 		query.Set("deployment", model)
-	} else {
+	} else if c.config.intent == "" {
+		// realtime
 		query.Set("model", model)
+	} else {
+		// transcription
+		query.Set("intent", c.config.intent)
 	}
 
 	return c.config.BaseURL + "?" + query.Encode()

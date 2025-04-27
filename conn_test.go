@@ -48,7 +48,7 @@ func (m *mockWebSocketConn) Ping(ctx context.Context) error {
 func TestConnect(t *testing.T) {
 	token := "mock-token"
 	model := "test-model"
-	client := openairt.NewClient(token)
+	client := openairt.NewRealtimeClient(token)
 
 	dialCalled := false
 	readMessageCalled := false

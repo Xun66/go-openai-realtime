@@ -152,6 +152,18 @@ type InputAudioTranscription struct {
 	Language string `json:"language,omitempty"`
 }
 
+type InputAudioNoiseReduction struct {
+	// The type of noise reduction.
+	Type InputAudioNoiseReductionType `json:"type"`
+}
+
+type InputAudioNoiseReductionType string
+
+const (
+	InputAudioNoiseReductionTypeNearField InputAudioNoiseReductionType = "near_field"
+	InputAudioNoiseReductionTypeFarField  InputAudioNoiseReductionType = "far_field"
+)
+
 type Tool struct {
 	Type        ToolType `json:"type"`
 	Name        string   `json:"name"`
